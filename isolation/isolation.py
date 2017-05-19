@@ -37,6 +37,9 @@ class Board(object):
     BLANK = 0
     NOT_MOVED = None
 
+    LOSE_SCORE = float("-inf")
+    WIN_SCORE = float("inf")
+
     def __init__(self, player_1, player_2, width=7, height=7):
         self.width = width
         self.height = height
@@ -240,10 +243,10 @@ class Board(object):
         if not self.get_legal_moves(self._active_player):
 
             if player == self._inactive_player:
-                return float("inf")
+                return self.WIN_SCORE
 
             if player == self._active_player:
-                return float("-inf")
+                return self.LOSE_SCORE
 
         return 0.
 
@@ -322,7 +325,7 @@ class Board(object):
             game_copy = self.copy()
 
             move_start = time_millis()
-            time_left = lambda : time_limit - (time_millis() - move_start)
+            time_left = lambda: time_limit - (time_millis() - move_start)
             curr_move = self._active_player.get_move(game_copy, time_left)
             move_end = time_left()
 
