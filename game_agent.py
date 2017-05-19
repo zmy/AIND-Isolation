@@ -4,6 +4,9 @@ and include the results in your report.
 """
 import random
 
+LOSE_SCORE = float("-inf")
+WIN_SCORE = float("inf")
+
 
 class SearchTimeout(Exception):
     """Subclass base exception for code clarity. """
@@ -60,8 +63,13 @@ def custom_score_2(game, player):
     float
         The heuristic value of the current game state to the specified player.
     """
-    # TODO: finish this function!
-    raise NotImplementedError
+    num_my_moves = game.get_legal_moves(player)
+    num_op_moves = game.get_legal_moves(game.get_opponent(player))
+
+    if num_my_moves == 0 or num_op_moves == 0:
+        return game.utility(player)
+    else:
+        return num_my_moves - num_op_moves
 
 
 def custom_score_3(game, player):
@@ -209,11 +217,47 @@ class MinimaxPlayer(IsolationPlayer):
                 each helper function or else your agent will timeout during
                 testing.
         """
+        if depth == 0:
+            return LOSE_SCORE, (-1, -1)
+
+        best_val, best_move = LOSE_SCORE, (-1, -1)
+        for move in game.get_legal_moves(game.active_player):
+            score = self.min_value(game.forecast_move(move), depth - 1)
+            if score > best_val:
+                best_val, best_move = score, move
+
+        return best_move
+
+    def max_value(self, game, depth):
         if self.time_left() < self.TIMER_THRESHOLD:
             raise SearchTimeout()
 
-        # TODO: finish this function!
-        raise NotImplementedError
+        me = game.active_player
+        if depth == 0:
+            return self.score(game, me)
+
+        best_val = LOSE_SCORE
+        for move in game.get_legal_moves(me):
+            score = self.min_value(game.forecast_move(move), depth - 1)
+            best_val = max(best_val, score)
+
+        return best_val
+
+    def min_value(self, game, depth):
+        if self.time_left() < self.TIMER_THRESHOLD:
+            raise SearchTimeout()
+
+        me = game.active_player
+        master = game.inactive_player
+        if depth == 0:
+            return self.score(game, master)
+
+        best_val = WIN_SCORE
+        for move in game.get_legal_moves(me):
+            score = self.max_value(game.forecast_move(move), depth - 1)
+            best_val = min(best_val, score)
+
+        return best_val
 
 
 class AlphaBetaPlayer(IsolationPlayer):
